@@ -1,0 +1,94 @@
+**Задание**
+
+#1.Загрузка данных в КХ
+
+#2.Создайте базу homework
+```
+CREATE DATABASE homework
+```
+#3.Создаём таблицу metrika
+```
+CREATE TABLE homework.metrika
+(
+    `EventDate` Date,
+    `CounterID` UInt32,
+    `UserID` UInt64,
+    `RegionID` UInt32
+)
+ENGINE = MergeTree()
+PARTITION BY toYYYYMM(EventDate)
+ORDER BY (CounterID, EventDate, intHash32(UserID))
+```
+#4.Заливаем данные в таблицу
+```
+cat metrika_sample.tsv | clickhouse-client --database homework --query "INSERT INTO metrika FORMAT TSV"
+```
+#5.Посчитайте какой пользователь UserID сделал больше всего просмотров страниц?
+
+1. Создем базу данных homework:
+```
+CREATE DATABASE homework
+
+SHOW DATABASES
+```
+┌─name───────────────┐
+│ INFORMATION_SCHEMA │
+│ default            │
+│ homework           │
+│ information_schema │
+│ system             │
+└────────────────────┘
+
+2. Создаём таблицу metrika:
+```
+CREATE TABLE homework.metrika
+(
+    `EventDate` Date,
+    `CounterID` UInt32,
+    `UserID` UInt64,
+    `RegionID` UInt32
+)
+ENGINE = MergeTree()
+PARTITION BY toYYYYMM(EventDate)
+ORDER BY (CounterID, EventDate, intHash32(UserID))
+
+SHOW TABLES
+```
+|     name       |   
+|----------------|
+|     metrika    |   
+|                |
+
+3. Заливаем данные в таблицу:
+```
+cat metrika_sample.tsv | clickhouse-client --database homework --query "INSERT INTO metrika FORMAT TSV"
+```
+```
+SELECT * FROM metrika LIMIT 5
+```
+|     EventDate     |     CounterID    |     UserID                 |     RegionID    |
+|-------------------|------------------|----------------------------|-----------------|
+|     2014-03-17    |     57           |     8585742290196126178    |     14050       |
+|     2014-03-17    |     57           |     610708775678702928     |     54          |
+|     2014-03-17    |     57           |     610708775678702928     |     54          |
+|     2014-03-17    |     57           |     610708775678702928     |     54          |
+|     2014-03-17    |     57           |     610708775678702928     |     54          |
+
+4. Посчитайте какой пользователь UserID сделал больше всего просмотров страниц?
+```
+SELECT UserID, count() as Count
+  FROM metrika
+  GROUP BY UserID
+  ORDER BY Count DESC
+  LIMIT 1;
+```
+|     UserID                 |     Count    |
+|----------------------------|--------------|
+|     1313448155240738815    |     4439     |
+
+
+
+
+
+
+
