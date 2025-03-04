@@ -1,0 +1,3 @@
+rootProject.name = 'kafka-streams-netology'
+include 'im.zav.joiner'
+include 'im.zav.alerter'
